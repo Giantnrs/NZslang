@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NZ Slang Quiz</title>
+<style>
+  :root {
+    --bg: #0f1226;
+    --card: #1a1f3d;
+    --card-2: #232a52;
+    --ink: #eef1ff;
+    --muted: #9aa3c7;
+    --accent: #4cc9f0;
+    --accent-2: #f72585;
+    --good: #2ecc71;
+    --bad: #ff5d73;
+    --line: #2e356a;
+    --shadow: 0 12px 40px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #2a2f63 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, #3a1145 0%, transparent 55%),
+                var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .wrap { width: 100%; max-width: 640px; }
+  header { text-align: center; margin-bottom: 18px; }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 30px;
+    letter-spacing: .5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .card {
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat {
+    flex: 1;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat .num { font-size: 22px; font-weight: 700; }
+  .stat .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .stat.good .num { color: var(--good); }
+  .stat.bad .num { color: var(--bad); }
+
+  .progress {
+    height: 8px;
+    background: rgba(255,255,255,.07);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width .35s ease;
+  }
+
+  .qmeta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .chip {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    background: rgba(76,201,240,.08);
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+  .qnum { font-size: 12px; color: var(--muted); }
+
+  .prompt { font-size: 15px; color: var(--muted); margin: 4px 0 2px; }
+  .term {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0 0 18px;
+    word-break: break-word;
+  }
+
+  .options { display: grid; gap: 10px; }
+  .opt {
+    text-align: left;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    color: var(--ink);
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform .08s ease, background .15s ease, border-color .15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .opt:hover:not(:disabled) { background: rgba(255,255,255,.08); transform: translateY(-1px); }
+  .opt:disabled { cursor: default; }
+  .opt .key {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: rgba(255,255,255,.08);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .opt.correct { background: rgba(46,204,113,.16); border-color: var(--good); }
+  .opt.correct .key { background: var(--good); color: #062d18; }
+  .opt.wrong { background: rgba(255,93,115,.14); border-color: var(--bad); }
+  .opt.wrong .key { background: var(--bad); color: #3a0008; }
+
+  .reveal {
+    margin-top: 16px;
+    border-top: 1px dashed var(--line);
+    padding-top: 14px;
+    display: none;
+  }
+  .reveal.show { display: block; }
+  .reveal .verdict { font-weight: 700; margin-bottom: 6px; }
+  .reveal .verdict.good { color: var(--good); }
+  .reveal .verdict.bad { color: var(--bad); }
+  .reveal .example {
+    background: rgba(255,255,255,.04);
+    border-left: 3px solid var(--accent);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-style: italic;
+    color: var(--ink);
+    margin-top: 6px;
+  }
+  .reveal .example .lbl { font-style: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); display: block; margin-bottom: 3px; }
+
+  .actions { margin-top: 16px; display: flex; gap: 10px; }
+  button.btn {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: #04122a;
+  }
+  button.btn.ghost {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    flex: 0 0 auto;
+  }
+  button.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* Setup / start screen */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  select, .field select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--card-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    font-size: 15px;
+  }
+  .hidden { display: none !important; }
+
+  /* Results */
+  .result { text-align: center; }
+  .result .big {
+    font-size: 56px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .result .msg { font-size: 18px; margin: 4px 0 18px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🥝 NZ Slang Quiz</h1>
+    <p class="subtitle">How fluent is your Kiwi youth slang?</p>
+  </header>
+
+  <!-- START SCREEN -->
+  <div id="start" class="card">
+    <div class="field">
+      <label for="category">Category</label>
+      <select id="category"></select>
+    </div>
+    <div class="field">
+      <label for="length">Number of questions</label>
+      <select id="length">
+        <option value="10">10 — quick round</option>
+        <option value="20" selected>20 — standard</option>
+        <option value="50">50 — marathon</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="term2meaning" selected>Guess the meaning of a term</option>
+        <option value="meaning2term">Guess the term from a meaning</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn" id="startBtn">Start quiz →</button>
+    </div>
+    <footer id="poolInfo"></footer>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz" class="card hidden">
+    <div class="stats">
+      <div class="stat"><div class="num" id="sQ">0</div><div class="lbl">Question</div></div>
+      <div class="stat good"><div class="num" id="sR">0</div><div class="lbl">Right</div></div>
+      <div class="stat bad"><div class="num" id="sW">0</div><div class="lbl">Wrong</div></div>
+    </div>
+    <div class="progress"><div id="bar"></div></div>
+
+    <div class="qmeta">
+      <span class="chip" id="chip">CATEGORY</span>
+      <span class="qnum" id="qnum"></span>
+    </div>
+    <p class="prompt" id="prompt">What does this mean?</p>
+    <h2 class="term" id="term">—</h2>
+
+    <div class="options" id="options"></div>
+
+    <div class="reveal" id="reveal">
+      <div class="verdict" id="verdict"></div>
+      <div class="example" id="example"><span class="lbl">Example</span><span id="exampleText"></span></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" id="quitBtn">Quit</button>
+      <button class="btn" id="nextBtn" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results" class="card hidden">
+    <div class="result">
+      <div class="big" id="scorePct">0%</div>
+      <div class="msg" id="scoreMsg"></div>
+      <p class="subtitle" id="scoreDetail"></p>
+      <div class="actions" style="margin-top:22px;">
+        <button class="btn ghost" id="reviewHomeBtn">Change settings</button>
+        <button class="btn" id="againBtn">Play again ↻</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>NZ Youth Slang dataset · built for GitHub Pages</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
