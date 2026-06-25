@@ -317,6 +317,80 @@
     .theme-toggle .label { display: none; }
     .theme-toggle { top: 16px; right: 12px; }
   }
+
+  /* Dictionary popup */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8,10,25,.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 50;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    width: 100%;
+    max-width: 540px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-head h3 { margin: 0; font-size: 17px; }
+  .modal-close {
+    border: none;
+    background: var(--fill);
+    color: var(--ink);
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .modal-close:hover { background: var(--fill-hover); }
+  .modal-body { padding: 16px 18px; overflow-y: auto; }
+  .modal-foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--line);
+    text-align: right;
+  }
+  .modal-foot a { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 14px; }
+  .modal-foot a:hover { text-decoration: underline; }
+  .dict-word { font-size: 20px; font-weight: 800; margin: 0 0 12px; }
+  .dict-entry { padding: 12px 0; border-top: 1px dashed var(--line); }
+  .dict-entry:first-child { border-top: none; padding-top: 0; }
+  .dict-def { white-space: pre-wrap; line-height: 1.5; }
+  .dict-ex {
+    white-space: pre-wrap;
+    margin-top: 8px;
+    padding-left: 10px;
+    border-left: 3px solid var(--accent);
+    font-style: italic;
+    color: var(--muted);
+  }
+  .dict-status { color: var(--muted); text-align: center; padding: 24px 0; }
+  .dict-spinner {
+    width: 26px; height: 26px;
+    border: 3px solid var(--fill-hover);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -383,7 +457,7 @@
     <div class="reveal" id="reveal">
       <div class="verdict" id="verdict"></div>
       <div class="example" id="example"><span class="lbl">Example</span><span id="exampleText"></span></div>
-      <a class="dict-link" id="dictLink" href="#" target="_blank" rel="noopener noreferrer">🔎 Look up “<span id="dictTerm"></span>” on Urban Dictionary ↗</a>
+      <a class="dict-link" id="dictLink" href="#" target="_blank" rel="noopener noreferrer">🔎 Look up “<span id="dictTerm"></span>” in Urban Dictionary</a>
     </div>
 
     <div class="actions">
@@ -406,6 +480,20 @@
   </div>
 
   <footer>NZ Youth Slang dataset · built for GitHub Pages</footer>
+</div>
+
+<!-- DICTIONARY POPUP -->
+<div id="dictModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dictTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="dictTitle">Urban Dictionary</h3>
+      <button class="modal-close" id="dictClose" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="dictBody"></div>
+    <div class="modal-foot">
+      <a id="dictMore" href="#" target="_blank" rel="noopener noreferrer">Open on Urban Dictionary ↗</a>
+    </div>
+  </div>
 </div>
 
 <script src="data.js"></script>

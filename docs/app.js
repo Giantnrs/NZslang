@@ -58,6 +58,7 @@
 
   // --- quiz state ----------------------------------------------------------
   var state = null;
+  var currentLookupTerm = "";
 
   function buildQuestions(pool, n, mode) {
     var picks = sample(pool, Math.min(n, pool.length));
@@ -224,11 +225,12 @@
       $("example").style.display = "none";
     }
 
-    // Dictionary lookup link (base form, dropping any |-joined variants).
-    var lookup = q.correct.term.split("|")[0].trim();
-    $("dictTerm").textContent = lookup;
+    // Dictionary lookup (base form, dropping any |-joined variants).
+    currentLookupTerm = q.correct.term.split("|")[0].trim();
+    $("dictTerm").textContent = currentLookupTerm;
+    // href kept as a no-JS / middle-click fallback; click opens the popup.
     $("dictLink").href = "https://www.urbandictionary.com/define.php?term=" +
-      encodeURIComponent(lookup);
+      encodeURIComponent(currentLookupTerm);
     $("hintBox").classList.add("hidden");
     $("reveal").classList.add("show");
     $("nextBtn").disabled = false;
@@ -263,6 +265,7 @@
   // --- keyboard shortcuts (1-4 / A-D to answer, Enter/→ for next) ---------
   document.addEventListener("keydown", function (e) {
     if (screens.quiz.classList.contains("hidden")) return;
+    if (!$("dictModal").classList.contains("hidden")) return; // popup is open
     if (!state) return;
     if (!state.answered) {
       if (e.key.toLowerCase() === "h") { e.preventDefault(); revealHint(); return; }
@@ -275,6 +278,70 @@
       e.preventDefault();
       next();
     }
+  });
+
+  // --- dictionary popup (Urban Dictionary API) -----------------------------
+  var dictCache = {};
+
+  // UD wraps cross-linked words in [brackets]; drop them and normalise newlines.
+  function cleanUD(text) {
+    return (text || "").replace(/[\[\]]/g, "").replace(/\r\n?/g, "\n").trim();
+  }
+
+  function openDict(term) {
+    if (!term) return;
+    $("dictMore").href = "https://www.urbandictionary.com/define.php?term=" + encodeURIComponent(term);
+    $("dictModal").classList.remove("hidden");
+    var body = $("dictBody");
+    body.innerHTML = '<div class="dict-status"><div class="dict-spinner"></div>Looking up “' +
+      escapeHtml(term) + '”…</div>';
+
+    if (dictCache[term]) { renderDict(term, dictCache[term]); return; }
+    fetch("https://api.urbandictionary.com/v0/define?term=" + encodeURIComponent(term))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        var list = (data && data.list) || [];
+        dictCache[term] = list;
+        // Only render if this is still the term the user is looking at.
+        if (!$("dictModal").classList.contains("hidden")) renderDict(term, list);
+      })
+      .catch(function () {
+        body.innerHTML = '<div class="dict-status">Couldn’t load definitions right now. ' +
+          'Use the link below to open Urban Dictionary directly.</div>';
+      });
+  }
+
+  function renderDict(term, list) {
+    var body = $("dictBody");
+    if (!list.length) {
+      body.innerHTML = '<div class="dict-status">No Urban Dictionary entry found for “' +
+        escapeHtml(term) + '”. Try the link below.</div>';
+      return;
+    }
+    var html = '<div class="dict-word">' + escapeHtml(list[0].word || term) + "</div>";
+    list.slice(0, 3).forEach(function (e) {
+      var ex = cleanUD(e.example);
+      html += '<div class="dict-entry">';
+      html += '<div class="dict-def">' + escapeHtml(cleanUD(e.definition)) + "</div>";
+      if (ex) html += '<div class="dict-ex">' + escapeHtml(ex) + "</div>";
+      html += "</div>";
+    });
+    body.innerHTML = html;
+    body.scrollTop = 0;
+  }
+
+  function closeDict() { $("dictModal").classList.add("hidden"); }
+
+  $("dictLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    openDict(currentLookupTerm);
+  });
+  $("dictClose").addEventListener("click", closeDict);
+  $("dictModal").addEventListener("click", function (e) {
+    if (e.target === $("dictModal")) closeDict();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !$("dictModal").classList.contains("hidden")) closeDict();
   });
 
   // --- theme toggle --------------------------------------------------------
