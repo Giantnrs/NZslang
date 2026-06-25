@@ -143,9 +143,53 @@
       box.appendChild(btn);
     });
 
+    // Reset the example hint for this question.
+    var hintBox = $("hintBox");
+    if (q.correct.example) {
+      hintBox.classList.remove("hidden");
+      $("hintBtn").style.display = "";
+      $("hintText").classList.remove("show");
+    } else {
+      hintBox.classList.add("hidden");
+    }
+
     $("reveal").classList.remove("show");
     $("nextBtn").disabled = true;
     $("nextBtn").textContent = state.idx === state.questions.length - 1 ? "See results →" : "Next →";
+  }
+
+  // Blank out the term inside its example so the hint doesn't give away
+  // the answer in "guess the term" mode.
+  function maskExample(example, term) {
+    var safe = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    var re = new RegExp(safe, "ig");
+    var isLetter = function (ch) { return !!ch && /[A-Za-z]/.test(ch); };
+    var out = "", last = 0, m;
+    while ((m = re.exec(example)) !== null) {
+      // Only blank whole-word matches, so a short term like "g" doesn't
+      // also blank the "g" inside "good".
+      var atWordBoundary = !isLetter(example[m.index - 1]) &&
+                           !isLetter(example[m.index + m[0].length]);
+      out += escapeHtml(example.slice(last, m.index));
+      out += atWordBoundary
+        ? '<span class="mask">' + new Array(Math.max(3, m[0].length) + 1).join("_") + "</span>"
+        : escapeHtml(m[0]);
+      last = m.index + m[0].length;
+      if (m.index === re.lastIndex) re.lastIndex++;
+    }
+    out += escapeHtml(example.slice(last));
+    return out;
+  }
+
+  function revealHint() {
+    if (!state) return;
+    var q = state.questions[state.idx];
+    if (!q || !q.correct.example) return;
+    $("hintExampleText").innerHTML = state.mode === "meaning2term"
+      ? maskExample(q.correct.example, q.correct.term)
+      : escapeHtml(q.correct.example);
+    $("hintText").classList.add("show");
+    $("hintBtn").style.display = "none";
   }
 
   function answer(chosen) {
@@ -179,6 +223,7 @@
     } else {
       $("example").style.display = "none";
     }
+    $("hintBox").classList.add("hidden");
     $("reveal").classList.add("show");
     $("nextBtn").disabled = false;
     $("bar").style.width = ((state.idx + 1) / state.questions.length * 100) + "%";
@@ -214,6 +259,7 @@
     if (screens.quiz.classList.contains("hidden")) return;
     if (!state) return;
     if (!state.answered) {
+      if (e.key.toLowerCase() === "h") { e.preventDefault(); revealHint(); return; }
       var idx = -1;
       if (e.key >= "1" && e.key <= "4") idx = parseInt(e.key, 10) - 1;
       var up = e.key.toUpperCase();
@@ -243,6 +289,7 @@
 
   // --- wiring --------------------------------------------------------------
   $("startBtn").addEventListener("click", startQuiz);
+  $("hintBtn").addEventListener("click", revealHint);
   $("nextBtn").addEventListener("click", next);
   $("quitBtn").addEventListener("click", function () { show("start"); });
   $("againBtn").addEventListener("click", startQuiz);

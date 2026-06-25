@@ -173,6 +173,35 @@
   .opt.wrong { background: rgba(255,93,115,.14); border-color: var(--bad); }
   .opt.wrong .key { background: var(--bad); color: #3a0008; }
 
+  /* Hint (reveal example before answering) */
+  .hint { margin-top: 14px; }
+  .hint.hidden { display: none; }
+  .hint-btn {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px dashed var(--line);
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .hint-btn:hover { background: var(--fill); color: var(--ink); border-color: var(--accent); }
+  .hint-text {
+    display: none;
+    background: var(--fill);
+    border-left: 3px solid var(--accent);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-style: italic;
+    color: var(--ink);
+  }
+  .hint-text.show { display: block; }
+  .hint-text .lbl { font-style: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .hint-text .mask { font-style: normal; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+
   .reveal {
     margin-top: 16px;
     border-top: 1px dashed var(--line);
@@ -335,6 +364,11 @@
     <h2 class="term" id="term">—</h2>
 
     <div class="options" id="options"></div>
+
+    <div class="hint" id="hintBox">
+      <button class="hint-btn" id="hintBtn" type="button">💡 Stuck? Reveal an example</button>
+      <div class="hint-text" id="hintText"><span class="lbl">Example</span><span id="hintExampleText"></span></div>
+    </div>
 
     <div class="reveal" id="reveal">
       <div class="verdict" id="verdict"></div>
