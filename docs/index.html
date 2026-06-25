@@ -222,6 +222,16 @@
     margin-top: 6px;
   }
   .reveal .example .lbl { font-style: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .dict-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .dict-link:hover { border-bottom-color: var(--accent); }
 
   .actions { margin-top: 16px; display: flex; gap: 10px; }
   button.btn {
@@ -373,6 +383,7 @@
     <div class="reveal" id="reveal">
       <div class="verdict" id="verdict"></div>
       <div class="example" id="example"><span class="lbl">Example</span><span id="exampleText"></span></div>
+      <a class="dict-link" id="dictLink" href="#" target="_blank" rel="noopener noreferrer">🔎 Look up “<span id="dictTerm"></span>” on Urban Dictionary ↗</a>
     </div>
 
     <div class="actions">

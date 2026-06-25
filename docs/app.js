@@ -223,6 +223,12 @@
     } else {
       $("example").style.display = "none";
     }
+
+    // Dictionary lookup link (base form, dropping any |-joined variants).
+    var lookup = q.correct.term.split("|")[0].trim();
+    $("dictTerm").textContent = lookup;
+    $("dictLink").href = "https://www.urbandictionary.com/define.php?term=" +
+      encodeURIComponent(lookup);
     $("hintBox").classList.add("hidden");
     $("reveal").classList.add("show");
     $("nextBtn").disabled = false;
