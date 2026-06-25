@@ -225,6 +225,22 @@
     }
   });
 
+  // --- theme toggle --------------------------------------------------------
+  function syncThemeLabel() {
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    var lbl = $("themeLabel");
+    if (lbl) lbl.textContent = dark ? "Dark" : "Light";
+  }
+  syncThemeLabel();
+  $("themeToggle").addEventListener("click", function () {
+    var root = document.documentElement;
+    var dark = root.getAttribute("data-theme") === "dark";
+    if (dark) root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", "dark");
+    try { localStorage.setItem("slangquiz-theme", dark ? "light" : "dark"); } catch (e) {}
+    syncThemeLabel();
+  });
+
   // --- wiring --------------------------------------------------------------
   $("startBtn").addEventListener("click", startQuiz);
   $("nextBtn").addEventListener("click", next);
